@@ -1,6 +1,7 @@
 package com.revature.models;
 
 import java.io.File;
+import java.sql.Blob;
 import java.sql.Timestamp;
 
 /**
@@ -21,7 +22,7 @@ public class Reimbursement extends AbstractReimbursement {
 	private Timestamp submissionDate;
 	private Timestamp resolutionDate;
 	private String description;
-	private File receipt;
+	private Blob receipt;
 	private Type type;
 	
 	public Reimbursement() {
@@ -36,7 +37,7 @@ public class Reimbursement extends AbstractReimbursement {
         super(id, status, author, resolver, amount);
     }
     
-    public Reimbursement(int id, Status status, User author, User resolver, double amount, Timestamp submissionDate, Timestamp resolutionDate, String description, File receipt, Type type) {
+    public Reimbursement(int id, Status status, User author, User resolver, double amount, Timestamp submissionDate, Timestamp resolutionDate, String description, Blob receipt, Type type) {
         super(id, status, author, resolver, amount);
         this.submissionDate = submissionDate;
         this.resolutionDate = resolutionDate;
@@ -69,11 +70,11 @@ public class Reimbursement extends AbstractReimbursement {
 		this.description = description;
 	}
 
-	public File getReceipt() {
+	public Blob getReceipt() {
 		return receipt;
 	}
 
-	public void setReceipt(File receipt) {
+	public void setReceipt(Blob receipt) {
 		this.receipt = receipt;
 	}
 
