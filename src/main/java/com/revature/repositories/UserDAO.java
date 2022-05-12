@@ -16,6 +16,8 @@ public class UserDAO {
      * Should retrieve a User from the DB with the corresponding username or an empty optional if there is no match.
      */
     public Optional<User> getByUsername(String username) {
+    	User user = new User();
+    	
         try (Connection conn = ConnectionFactory.getInstance().getConnection()) {
         	String sql = "SELECT * FROM ers_users WHERE ers_username = ?;";
         	
@@ -26,7 +28,6 @@ public class UserDAO {
         	ResultSet result = statement.executeQuery();
         	
         	while(result.next()) {
-        		User user = new User();
         		user.setId(result.getInt("ers_users_id"));
         		user.setUsername(result.getString("ers_username"));
         		user.setPassword(result.getString("ers_password"));
@@ -52,6 +53,8 @@ public class UserDAO {
     }
     
     public User getById(int id) {
+    	User user = new User();
+    	
         try (Connection conn = ConnectionFactory.getInstance().getConnection()) {
         	String sql = "SELECT * FROM ers_users WHERE ers_users_id = ?;";
         
@@ -61,7 +64,6 @@ public class UserDAO {
         	
         	ResultSet result = statement.executeQuery();
         	while(result.next()) {
-        		User user = new User();
         		user.setId(result.getInt("ers_users_id"));
         		user.setUsername(result.getString("ers_username"));
         		user.setPassword(result.getString("ers_password"));
@@ -103,7 +105,6 @@ public class UserDAO {
     		
     		int count = 1;
     		
-    		statement.setInt(count++, userToBeRegistered.getId());
     		statement.setString(count++, userToBeRegistered.getUsername());
     		statement.setString(count++, userToBeRegistered.getPassword());
     		statement.setString(count++, userToBeRegistered.getFirstName());
@@ -121,6 +122,7 @@ public class UserDAO {
     		statement.execute();
     		
     		return userToBeRegistered;
+    		
     	}
     	catch(SQLException e) {
 			e.printStackTrace();

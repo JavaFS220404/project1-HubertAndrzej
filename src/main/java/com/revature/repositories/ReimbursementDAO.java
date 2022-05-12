@@ -22,6 +22,8 @@ public class ReimbursementDAO {
      * Should retrieve a Reimbursement from the DB with the corresponding id or an empty optional if there is no match.
      */
     public Optional<Reimbursement> getById(int id) {
+    	Reimbursement reimbursement = new Reimbursement();
+    	
     	try (Connection conn = ConnectionFactory.getInstance().getConnection()) {
     		String sql = "SELECT * FROM ers_reimbursement WHERE reimb_id = ?;";
     		
@@ -32,7 +34,6 @@ public class ReimbursementDAO {
         	ResultSet result = statement.executeQuery();
     	
         	while(result.next()) {
-        		Reimbursement reimbursement = new Reimbursement();
         		reimbursement.setId(result.getInt("reimb_id"));
         		reimbursement.setAmount(result.getDouble("reimb_amount"));;
         		reimbursement.setSubmissionDate(result.getTimestamp("reimb_submitted"));
@@ -82,13 +83,16 @@ public class ReimbursementDAO {
     	catch(SQLException e) {
 			e.printStackTrace();
 		}
-    	return Optional.empty();
+		return Optional.ofNullable(reimbursement);
+
     }
 
     /**
      * Should retrieve a List of Reimbursements from the DB with the corresponding Status or an empty List if there are no matches.
      */
     public List<Reimbursement> getByStatus(Status status) {
+    	List<Reimbursement> reimbursementList = new ArrayList<>();
+
     	try (Connection conn = ConnectionFactory.getInstance().getConnection()) {
     		
     		int statusId = 0;
@@ -111,8 +115,6 @@ public class ReimbursementDAO {
     		statement.setInt(1, statusId);
         	
         	ResultSet result = statement.executeQuery();
-        	
-        	List<Reimbursement> reimbursementList = new ArrayList<>();
         	
         	while(result.next()) {
         		Reimbursement reimbursement = new Reimbursement();
@@ -162,13 +164,38 @@ public class ReimbursementDAO {
         		reimbursementList.add(reimbursement);
         	}
         	
-        	return reimbursementList;
-        	
     	}
     	catch(SQLException e) {
 			e.printStackTrace();
 		}
-        return Collections.emptyList();
+    	return reimbursementList;
+    }
+    
+    public Reimbursement create(Reimbursement newReimbursement) {
+    	try (Connection conn = ConnectionFactory.getInstance().getConnection()) {
+    		String sql = "INSERT INTO ers_reimbursements (reimb_amount, reimb_submitted, reimb_description, reimb_author, reimb_type_id) VALUES (?, ?, ?, ?, ?);";
+    	
+    		PreparedStatement statement = conn.prepareStatement(sql);
+        	
+    		int count = 0;
+    		
+    		statement.setDouble(++count, newReimbursement.getAmount());
+    		statement.setTimestamp(++count, newReimbursement.getSubmissionDate());
+    		statement.setString(++count, newReimbursement.getDescription());
+    		statement.setInt(++count, newReimbursement.getAuthor().getId());
+    		int typeId = (newReimbursement.getType().ordinal()) + 1;
+    		statement.setInt(++count, typeId);
+    		
+    		statement.execute();
+    		
+    		return newReimbursement;
+    	}
+    	catch(SQLException e) {
+			e.printStackTrace();
+		}
+
+		return null;
+    	
     }
 
     /**
@@ -180,29 +207,20 @@ public class ReimbursementDAO {
      */
     public Reimbursement update(Reimbursement unprocessedReimbursement) {
     	try (Connection conn = ConnectionFactory.getInstance().getConnection()) {
-    		String sql = "UPDATE ers_reimbursement SET reimb_id = ?, reimb_amount = ?, reimb_submitted = ?, reimb_resolved = ?, reimb_description = ?, reimb_receipt = ?, reimb_author = ?, reimb_resolver = ?, reimb_status_id = ?, reimb_type_id = ? WHERE reimb_id = ?";
+    		String sql = "UPDATE ers_reimbursement SET reimb_resolved = ?, reimb_resolver = ?, reimb_status_id = ? WHERE reimb_id = "+unprocessedReimbursement.getId();
     	
     		PreparedStatement statement = conn.prepareStatement(sql);
     	
     		int count = 0;
     		
-    		statement.setInt(++count, unprocessedReimbursement.getId());
-    		statement.setDouble(++count, unprocessedReimbursement.getAmount());
-    		statement.setTimestamp(++count, unprocessedReimbursement.getSubmissionDate());
     		statement.setTimestamp(++count, unprocessedReimbursement.getResolutionDate());
-    		statement.setString(++count, unprocessedReimbursement.getDescription());
-    		statement.setBlob(++count, unprocessedReimbursement.getReceipt());
-    		statement.setInt(++count, unprocessedReimbursement.getAuthor().getId());
     		statement.setInt(++count, unprocessedReimbursement.getResolver().getId());
     		int statusId = (unprocessedReimbursement.getStatus().ordinal()) + 1;
     		statement.setInt(++count, statusId);
-    		int typeId = (unprocessedReimbursement.getType().ordinal()) + 1;
-    		statement.setInt(++count, typeId);
     		
     		statement.execute();
     		
     		return unprocessedReimbursement;
-    		
     	}
     	catch(SQLException e) {
     		e.printStackTrace();

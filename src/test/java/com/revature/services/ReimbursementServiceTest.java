@@ -33,6 +33,7 @@ public class ReimbursementServiceTest {
 	public static void setUpBeforeClass() throws Exception {
 		reimbursementService = new ReimbursementService();
 		reimbursementDAO = mock(ReimbursementDAO.class);
+		reimbursementService.reimbursementDAO = reimbursementDAO;
 	}
 	
 	@Before

@@ -1,11 +1,15 @@
 package com.revature.services;
 
+import java.sql.Timestamp;
+import java.util.List;
+
+import com.revature.exceptions.ReimbursementNotCreatedException;
+import com.revature.exceptions.ReimbursementNotProcessedException;
 import com.revature.models.Reimbursement;
+import com.revature.models.Role;
 import com.revature.models.Status;
 import com.revature.models.User;
-
-import java.util.Collections;
-import java.util.List;
+import com.revature.repositories.ReimbursementDAO;
 
 /**
  * The ReimbursementService should handle the submission, processing,
@@ -25,6 +29,7 @@ import java.util.List;
  * </ul>
  */
 public class ReimbursementService {
+	protected ReimbursementDAO reimbursementDAO = new ReimbursementDAO();
 
     /**
      * <ul>
@@ -41,13 +46,33 @@ public class ReimbursementService {
      * After processing, the reimbursement will have its status changed to either APPROVED or DENIED.
      */
     public Reimbursement process(Reimbursement unprocessedReimbursement, Status finalStatus, User resolver) {
-        return null;
+    	Reimbursement reimbursement = unprocessedReimbursement;
+    	if (resolver.getRole() == Role.FINANCE_MANAGER) {
+        		reimbursement.setResolutionDate(new Timestamp(System.currentTimeMillis()));
+        		reimbursement.setResolver(resolver);
+        		reimbursement.setStatus(finalStatus);
+        		reimbursementDAO.update(reimbursement);
+        		return reimbursement;
+        	}
+    	else {	
+    		throw new ReimbursementNotProcessedException();
+    	}
     }
 
     /**
      * Should retrieve all reimbursements with the correct status.
      */
     public List<Reimbursement> getReimbursementsByStatus(Status status) {
-        return Collections.emptyList();
+        return reimbursementDAO.getByStatus(status);
+    }
+    
+    public Reimbursement createReimbursement(Reimbursement reimbursement) {
+    	Reimbursement reimbursementToBeAdded = reimbursementDAO.create(reimbursement);
+    	if (reimbursementToBeAdded != null) {
+    		return reimbursementToBeAdded;
+    	}
+    	else {
+    		throw new ReimbursementNotCreatedException("The creation of the reimbursement request failed. Please try again!");
+    	}
     }
 }

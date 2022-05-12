@@ -30,6 +30,7 @@ public class UserServiceTest {
     public static void setUpBeforeClass() throws Exception {
         userService = new UserService();
         userDAO = mock(UserDAO.class);
+        userService.userDAO = userDAO;
     }
 
     @Before

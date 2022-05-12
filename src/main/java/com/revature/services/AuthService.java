@@ -1,8 +1,13 @@
 package com.revature.services;
 
-import com.revature.models.User;
-
 import java.util.Optional;
+
+import com.revature.exceptions.AuthenticationFailedException;
+import com.revature.exceptions.NewUserHasNonZeroIdException;
+import com.revature.exceptions.RegistrationUnsuccessfulException;
+import com.revature.exceptions.UsernameNotUniqueException;
+import com.revature.models.User;
+import com.revature.repositories.UserDAO;
 
 /**
  * The AuthService should handle login and registration for the ERS application.
@@ -17,7 +22,9 @@ import java.util.Optional;
  * </ul>
  */
 public class AuthService {
-
+	
+	protected UserDAO userDAO = new UserDAO();
+	protected UserService userService = new UserService();
     /**
      * <ul>
      *     <li>Needs to check for existing users with username/email provided.</li>
@@ -27,8 +34,15 @@ public class AuthService {
      *     <li>Must return user object if the user logs in successfully.</li>
      * </ul>
      */
-    public User login(String username, String password) {
-        return null;
+    public Optional<User> login(String username, String password) {
+    	Optional<User> optionalUser = userService.getByUsername(username);
+        
+        if (optionalUser.isPresent() && optionalUser.get().getPassword().equals(password)) {
+        	return optionalUser;
+        }
+        else {
+        	throw new AuthenticationFailedException("Invalid username/password. Have you created an account?");
+        }
     }
 
     /**
@@ -45,7 +59,29 @@ public class AuthService {
      * After registration, the id will be a positive integer.
      */
     public User register(User userToBeRegistered) {
-        return null;
+    	User user = new User();
+    	
+    	if (userToBeRegistered.getId() == 0) {
+    		Optional<User> optionalUser = userDAO.getByUsername(userToBeRegistered.getUsername());
+    		
+    		if (optionalUser.isPresent()) {
+    			throw new UsernameNotUniqueException("The username is already in use. Please try again with a different username.");
+    		}
+    		else
+    		{
+    			user = userDAO.create(userToBeRegistered);
+    			
+    			if (user == userToBeRegistered) {
+    				return user;
+    			}
+    			else {
+    				throw new RegistrationUnsuccessfulException("Something went wrong. Please try again!");
+    			}
+    		}
+    	}
+    	else {
+    		throw new NewUserHasNonZeroIdException("New user have an Id different than zero");
+    	}
     }
 
     /**
