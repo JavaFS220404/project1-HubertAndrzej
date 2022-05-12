@@ -66,7 +66,11 @@ public class ReimbursementService {
         return reimbursementDAO.getByStatus(status);
     }
     
-    public Reimbursement createReimbursement(Reimbursement reimbursement) {
+    public List<Reimbursement> getReimbursementsByAuthor(User user) {
+        return reimbursementDAO.getByAuthor(user);
+    }
+    
+    public Reimbursement create(Reimbursement reimbursement) {
     	Reimbursement reimbursementToBeAdded = reimbursementDAO.create(reimbursement);
     	if (reimbursementToBeAdded != null) {
     		return reimbursementToBeAdded;

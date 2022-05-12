@@ -1,6 +1,5 @@
 package com.revature.models;
 
-import java.io.File;
 import java.sql.Blob;
 import java.sql.Timestamp;
 

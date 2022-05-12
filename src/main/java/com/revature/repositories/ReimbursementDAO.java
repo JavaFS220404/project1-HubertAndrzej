@@ -1,7 +1,6 @@
 package com.revature.repositories;
 
 import com.revature.models.Reimbursement;
-import com.revature.models.Role;
 import com.revature.models.Status;
 import com.revature.models.Type;
 import com.revature.models.User;
@@ -12,7 +11,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -171,6 +169,8 @@ public class ReimbursementDAO {
     	return reimbursementList;
     }
     
+    
+    
     public Reimbursement create(Reimbursement newReimbursement) {
     	try (Connection conn = ConnectionFactory.getInstance().getConnection()) {
     		String sql = "INSERT INTO ers_reimbursements (reimb_amount, reimb_submitted, reimb_description, reimb_author, reimb_type_id) VALUES (?, ?, ?, ?, ?);";
@@ -226,5 +226,75 @@ public class ReimbursementDAO {
     		e.printStackTrace();
     	}
     	return null;
+    }
+    
+    public List<Reimbursement> getByAuthor(User user) {
+    	List<Reimbursement> reimbursementList = new ArrayList<>();
+
+    	try (Connection conn = ConnectionFactory.getInstance().getConnection()) {
+    		
+    		int authorId = user.getId();
+    		
+    		String sql = "SELECT * FROM ers_reimbursement WHERE reimb_author = ?;";
+    		
+    		PreparedStatement statement = conn.prepareStatement(sql);
+    		
+    		statement.setInt(1, authorId);
+        	
+        	ResultSet result = statement.executeQuery();
+        	
+        	while(result.next()) {
+        		Reimbursement reimbursement = new Reimbursement();
+        		reimbursement.setId(result.getInt("reimb_id"));
+        		reimbursement.setAmount(result.getDouble("reimb_amount"));;
+        		reimbursement.setSubmissionDate(result.getTimestamp("reimb_submitted"));
+        		reimbursement.setResolutionDate(result.getTimestamp("reimb_resolved"));
+        		reimbursement.setDescription(result.getString("reimb_description"));
+        		reimbursement.setReceipt(result.getBlob("reimb_receipt"));
+        		UserDAO userDAO = new UserDAO();
+        		User author = userDAO.getById(authorId);
+        		reimbursement.setAuthor(author);
+        		int resolverId = result.getInt("reimb_resolver");
+        		User resolver = userDAO.getById(resolverId);
+        		reimbursement.setResolver(resolver);
+        		int statusId = result.getInt("reimb_status_id");
+        		
+        		if (statusId == 1)
+        		{
+        			reimbursement.setStatus(Status.PENDING);
+        		}
+        		else if (statusId == 2)
+        		{
+        			reimbursement.setStatus(Status.APPROVED);
+        		}
+        		else if (statusId == 3)
+        		{
+        			reimbursement.setStatus(Status.DENIED);
+        		}
+        		int typeId = result.getInt("reimb_type_id");
+        		if (typeId == 1)
+        		{
+        			reimbursement.setType(Type.LODGING);
+        		}
+        		else if (typeId == 2)
+        		{
+        			reimbursement.setType(Type.TRAVEL);
+        		}
+        		else if (typeId == 3)
+        		{
+        			reimbursement.setType(Type.FOOD);
+        		}
+        		else if (typeId == 4)
+        		{
+        			reimbursement.setType(Type.OTHER);
+        		}
+        		reimbursementList.add(reimbursement);
+        	}
+        	
+    	}
+    	catch(SQLException e) {
+			e.printStackTrace();
+		}
+    	return reimbursementList;
     }
 }
