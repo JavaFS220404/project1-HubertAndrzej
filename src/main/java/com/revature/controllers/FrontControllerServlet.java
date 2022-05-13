@@ -28,7 +28,7 @@ public class FrontControllerServlet extends HttpServlet {
 		
 		response.setStatus(404);
 
-		final String URL = request.getRequestURI().replace("/ERS/core/", "");
+		final String URL = request.getRequestURI().replace("/check/core/", "");
 		
 		String[] UrlSections = URL.split("/");
 		
@@ -84,7 +84,7 @@ public class FrontControllerServlet extends HttpServlet {
 						eRController.getOwnReimbursements(session, response);
 					}
 					else if (request.getMethod().equals("POST")) {
-BufferedReader reader = request.getReader();
+						BufferedReader reader = request.getReader();
 						
 						StringBuilder stringBuilder = new StringBuilder();
 						
